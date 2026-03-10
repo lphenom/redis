@@ -11,10 +11,10 @@
 
 ## Возможности
 
-- 🔌 **PhpRedisClient** — работа через `ext-redis`
-- 🧪 **FfiRedisClient** — заглушка для KPHP FFI (stub)
-- 🔗 **RedisConnector** — фабрика для создания клиентов
-- 📦 **RedisPipeline** — batch-команды
+- 🔌 **PhpRedisClient** — работа через `ext-redis` (PHP runtime / shared hosting)
+- 🌐 **RespRedisClient** — чистый TCP + RESP протокол (PHP + KPHP compiled binary)
+- 🔗 **RedisConnector** — авто-выбор драйвера (ext-redis или RESP)
+- 📦 **RedisPipeline** — batch-команды (MULTI/EXEC)
 - 📡 **PubSub** — публикация и подписка
 - ⚡ **KPHP-совместимость** — без reflection, eval, динамики
 

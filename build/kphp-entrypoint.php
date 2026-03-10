@@ -27,7 +27,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../src/Exception/RedisException.php';
 require_once __DIR__ . '/../src/Exception/RedisConnectionException.php';
 require_once __DIR__ . '/../src/Exception/RedisCommandException.php';
-require_once __DIR__ . '/../src/Exception/NotImplementedException.php';
 
 // Pipeline interface + KPHP-compatible pipeline (no \Redis dependency)
 require_once __DIR__ . '/../src/Pipeline/RedisPipelineDriverInterface.php';
@@ -36,10 +35,7 @@ require_once __DIR__ . '/../src/Pipeline/RedisPipeline.php';
 // Client interface (depends on: RedisPipeline)
 require_once __DIR__ . '/../src/Client/RedisClientInterface.php';
 
-// FfiRedisClient — placeholder stub
-require_once __DIR__ . '/../src/Client/FfiRedisClient.php';
-
-// RESP protocol client — works in KPHP (uses fsockopen/fread/fwrite)
+// RESP protocol client — works in KPHP (uses stream_socket_client/fread/fwrite/fgets)
 require_once __DIR__ . '/../src/Resp/RespClient.php';
 require_once __DIR__ . '/../src/Resp/RespPipelineDriver.php';
 require_once __DIR__ . '/../src/Client/RespRedisClient.php';
@@ -93,29 +89,7 @@ $pipeline->incr('counter');
 // Note: pipeline->execute() would attempt network call — skip in smoke-test
 echo 'smoke-test: RespPipelineDriver + RedisPipeline ok' . PHP_EOL;
 
-// Test 5: FfiRedisClient stub still throws NotImplementedException
-$ffiClient    = new \LPhenom\Redis\Client\FfiRedisClient();
-$gotException = false;
-
-$ex = null;
-try {
-    $ffiClient->get('key');
-} catch (\LPhenom\Redis\Exception\NotImplementedException $e) {
-    $ex           = $e;
-    $gotException = true;
-} catch (\Throwable $e) {
-    $ex           = $e;
-    $gotException = false;
-}
-
-if (!$gotException) {
-    echo 'FAIL: FfiRedisClient::get() should throw NotImplementedException' . PHP_EOL;
-    exit(1);
-}
-
-echo 'smoke-test: FfiRedisClient throws NotImplementedException ok' . PHP_EOL;
-
-// Test 6: RedisPublisher (using RespRedisClient as base)
+// Test 5: RedisPublisher (using RespRedisClient as base)
 $publisher = new \LPhenom\Redis\PubSub\RedisPublisher($respClient);
 echo 'smoke-test: RedisPublisher instantiation ok' . PHP_EOL;
 

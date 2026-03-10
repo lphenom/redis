@@ -117,11 +117,7 @@ require_once __DIR__ . '/../src/Exception/RedisConnectionException.php';
 
 Порядок: исключения → интерфейсы → реализации.
 
-## FfiRedisClient
-
-В KPHP-режиме используется `FfiRedisClient` — заглушка, которая будет реализована через FFI bindings позже. Сейчас все методы бросают `NotImplementedException`.
-
-## Ссылки
+## RespRedisClient — полноценный клиент для KPHP
 
 - [KPHP Documentation](https://vkcom.github.io/kphp/)
 - [KPHP vs PHP differences](https://vkcom.github.io/kphp/kphp-language/kphp-vs-php/whats-the-difference.html)

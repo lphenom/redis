@@ -20,8 +20,12 @@ require $pharFile;
 
 // Test 1: RedisConnectionConfig
 $config = new \LPhenom\Redis\Connection\RedisConnectionConfig(
-    host: '127.0.0.1',
-    port: 6379
+    '127.0.0.1',
+    6379,
+    '',
+    0,
+    2.0,
+    false
 );
 if ($config->getHost() !== '127.0.0.1') {
     fwrite(STDERR, 'smoke-test: RedisConnectionConfig FAILED' . PHP_EOL);
@@ -29,33 +33,20 @@ if ($config->getHost() !== '127.0.0.1') {
 }
 echo 'smoke-test: RedisConnectionConfig ok' . PHP_EOL;
 
-// Test 2: FfiRedisClient instantiation and NotImplementedException
-$ffiClient = new \LPhenom\Redis\Client\FfiRedisClient();
-$gotException = false;
+// Test 2: RespClient + RespRedisClient instantiation
+$resp   = new \LPhenom\Redis\Resp\RespClient('127.0.0.1', 6379, 2.0);
+$client = new \LPhenom\Redis\Client\RespRedisClient($resp);
+echo 'smoke-test: RespRedisClient ok' . PHP_EOL;
 
-try {
-    $ffiClient->get('test');
-} catch (\LPhenom\Redis\Exception\NotImplementedException $e) {
-    $gotException = true;
-} catch (\Throwable $e) {
-    $gotException = false;
-}
-
-if (!$gotException) {
-    fwrite(STDERR, 'smoke-test: FfiRedisClient FAILED' . PHP_EOL);
-    exit(1);
-}
-echo 'smoke-test: FfiRedisClient ok' . PHP_EOL;
-
-// Test 3: RedisPipeline in null mode
-$pipeline = new \LPhenom\Redis\Pipeline\RedisPipeline(null);
+// Test 3: RedisPipeline with RespPipelineDriver
+$driver   = new \LPhenom\Redis\Resp\RespPipelineDriver($resp);
+$pipeline = new \LPhenom\Redis\Pipeline\RedisPipeline($driver);
 $pipeline->set('key', 'value');
 $pipeline->incr('counter');
-$pipeline->execute();
 echo 'smoke-test: RedisPipeline ok' . PHP_EOL;
 
 // Test 4: RedisPublisher instantiation
-$publisher = new \LPhenom\Redis\PubSub\RedisPublisher($ffiClient);
+$publisher = new \LPhenom\Redis\PubSub\RedisPublisher($client);
 echo 'smoke-test: RedisPublisher ok' . PHP_EOL;
 
 echo '=== PHAR smoke-test: OK ===' . PHP_EOL;

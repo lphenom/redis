@@ -7,8 +7,7 @@
 ```
 RedisClientInterface
     ├── PhpRedisClient      — PHP runtime (ext-redis)      — shared hosting
-    ├── RespRedisClient     — PHP + KPHP (TCP + RESP)      — compiled binary
-    └── FfiRedisClient      — KPHP stub (future FFI)       — placeholder
+    └── RespRedisClient     — PHP + KPHP (TCP + RESP)      — compiled binary
 ```
 
 `RedisConnector::connect()` автоматически выбирает драйвер:
