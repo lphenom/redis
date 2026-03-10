@@ -255,4 +255,3 @@ final class RespClient
         throw new RedisCommandException('Redis: unknown reply type "' . $type . '"');
     }
 }
-

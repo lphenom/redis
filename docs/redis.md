@@ -2,36 +2,60 @@
 
 `LPhenom\Redis` — лёгкий Redis-клиент для LPhenom framework с поддержкой KPHP.
 
+## Архитектура драйверов
+
+```
+RedisClientInterface
+    ├── PhpRedisClient      — PHP runtime (ext-redis)      — shared hosting
+    ├── RespRedisClient     — PHP + KPHP (TCP + RESP)      — compiled binary
+    └── FfiRedisClient      — KPHP stub (future FFI)       — placeholder
+```
+
+`RedisConnector::connect()` автоматически выбирает драйвер:
+- Если `ext-redis` загружен → `PhpRedisClient`
+- Иначе → `RespRedisClient` (работает в KPHP-бинарнике)
+
 ## Подключение
 
-### Базовая конфигурация
+### Автовыбор драйвера (рекомендуется)
 
 ```php
 use LPhenom\Redis\Connection\RedisConnectionConfig;
 use LPhenom\Redis\Connection\RedisConnector;
 
 $config = new RedisConnectionConfig(
-    host: '127.0.0.1',
-    port: 6379,
-    password: '',
-    database: 0,
-    timeout: 2.0,
-    persistent: false
+    '127.0.0.1', // host
+    6379,         // port
+    '',           // password
+    0,            // database
+    2.0,          // timeout
+    false         // persistent
 );
 
+// Автовыбор: ext-redis → PhpRedisClient, иначе → RespRedisClient
 $redis = RedisConnector::connect($config);
+```
+
+### Явный выбор драйвера
+
+```php
+// Только ext-redis (PHP runtime / shared hosting)
+$redis = RedisConnector::connectPhpRedis($config);
+
+// Только RESP TCP (KPHP binary / без ext-redis)
+$redis = RedisConnector::connectResp($config);
 ```
 
 ### RedisConnectionConfig параметры
 
-| Параметр    | Тип     | По умолчанию  | Описание                            |
-|-------------|---------|---------------|-------------------------------------|
-| `host`      | string  | `127.0.0.1`   | Хост Redis-сервера                  |
-| `port`      | int     | `6379`        | Порт Redis-сервера                  |
-| `password`  | string  | `''`          | AUTH-пароль (пустая строка = нет)   |
-| `database`  | int     | `0`           | Индекс базы данных                  |
-| `timeout`   | float   | `2.0`         | Таймаут подключения в секундах      |
-| `persistent`| bool    | `false`       | Использовать persistent connections |
+| Параметр     | Тип    | По умолчанию | Описание                            |
+|--------------|--------|--------------|-------------------------------------|
+| `host`       | string | `127.0.0.1`  | Хост Redis-сервера                  |
+| `port`       | int    | `6379`       | Порт Redis-сервера                  |
+| `password`   | string | `''`         | AUTH-пароль (пустая строка = нет)   |
+| `database`   | int    | `0`          | Индекс базы данных                  |
+| `timeout`    | float  | `2.0`        | Таймаут подключения в секундах      |
+| `persistent` | bool   | `false`      | Persistent connections (ext-redis)  |
 
 ## Базовые операции
 

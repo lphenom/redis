@@ -2,6 +2,54 @@
 
 Пакет `lphenom/redis` полностью совместим с KPHP компиляцией.
 
+## RespRedisClient — полноценный клиент для KPHP
+
+В отличие от `lphenom/db` (где PDO отсутствует в KPHP и пришлось делать FFI через `libmysqlclient`),
+для Redis решение элегантнее — **чистый TCP + RESP протокол**.
+
+### Почему не FFI для Redis?
+
+| Подход | Требует | KPHP? |
+|--------|---------|-------|
+| `ext-redis` (PhpRedisClient) | PHP расширение | ❌ нет в бинарнике |
+| FFI + libhiredis | `libhiredis.so` на сервере | ✅ но сложно |
+| TCP + RESP (RespRedisClient) | ничего, только сеть | ✅ **лучший вариант** |
+
+### Как работает RespRedisClient
+
+```
+RespRedisClient
+    └── RespClient (TCP socket)
+            ├── stream_socket_client()   ← KPHP-поддерживается
+            ├── fwrite()                 ← KPHP-поддерживается
+            ├── fgets()                  ← KPHP-поддерживается
+            ├── fread()                  ← KPHP-поддерживается
+            └── fclose()                 ← KPHP-поддерживается
+```
+
+KPHP поддерживает `stream_socket_client()` (но **не** `fsockopen()`).
+Все остальные stream-функции тоже доступны.
+
+### Что НЕ поддерживается в KPHP (обход через RESP)
+
+| Недоступно в KPHP | Что используем вместо |
+|-------------------|-----------------------|
+| `ext-redis` / `\Redis` класс | `RespClient` (TCP) |
+| `fsockopen()` | `stream_socket_client()` |
+| `stream_set_timeout()` | timeout передаётся в `stream_socket_client()` |
+| `@var resource` аннотация | `@var mixed` (KPHP не знает тип resource) |
+
+### Выбор драйвера
+
+```php
+// PHP runtime (shared hosting) — автоматически ext-redis
+// KPHP binary — автоматически RESP TCP
+$redis = RedisConnector::connect($config);
+
+// Явно выбрать RESP (для KPHP entrypoint):
+$redis = RedisConnector::connectResp($config);
+```
+
 ## Проверка совместимости
 
 ```bash

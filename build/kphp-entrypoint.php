@@ -17,8 +17,8 @@ declare(strict_types=1);
  *   - src/PubSub/RedisSubscriber.php
  * These are PHP-runtime-only files.
  *
- * RespRedisClient + RespClient ARE included — they use only fsockopen/fread/fwrite
- * which are fully supported in KPHP compiled binary.
+ * RespRedisClient + RespClient ARE included — they use only stream_socket_client/fread/fwrite/fgets
+ * which are fully supported in KPHP compiled binary (unlike fsockopen which is NOT in KPHP).
  *
  * This file also serves as a smoke-test for KPHP binary verification.
  */
