@@ -1,0 +1,18 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    excludePaths:
+        - vendor
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        # ext-redis class may not be available in all environments
+        - message: '#Class \\Redis not found#'
+          reportUnmatched: false
+        - message: '#Class \\RedisException not found#'
+          reportUnmatched: false
+        # Missing array type hints in iterables are acceptable for KPHP compatibility
+        -
+            identifier: missingType.iterableValue
+            reportUnmatched: false
+
