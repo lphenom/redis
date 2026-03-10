@@ -6,31 +6,51 @@ namespace LPhenom\Redis\Connection;
 
 use LPhenom\Redis\Client\PhpRedisClient;
 use LPhenom\Redis\Client\RedisClientInterface;
+use LPhenom\Redis\Client\RespRedisClient;
+use LPhenom\Redis\Exception\RedisCommandException;
 use LPhenom\Redis\Exception\RedisConnectionException;
+use LPhenom\Redis\Resp\RespClient;
 
 /**
  * Factory for creating Redis client instances.
  *
- * Creates appropriate client based on available extensions.
+ * Driver selection:
+ *   - connectPhpRedis() — uses ext-redis (PHP runtime, shared hosting)
+ *   - connectResp()     — uses raw TCP + RESP protocol (KPHP binary, or when ext-redis unavailable)
+ *   - connect()         — auto-selects: ext-redis if available, else RESP
  *
  * KPHP-compatible:
  * - No dynamic class loading (new $className())
  * - No reflection
- * - Explicit new PhpRedisClient() / new FfiRedisClient()
+ * - Explicit new PhpRedisClient() / new RespRedisClient()
  * - try/catch with explicit catch blocks
  */
 final class RedisConnector
 {
     /**
-     * Connect to Redis and return a client instance.
+     * Auto-select driver: ext-redis if available, otherwise RESP over TCP.
      *
-     * Requires ext-redis to be installed and enabled.
-     *
-     * @param  RedisConnectionConfig    $config connection configuration
-     * @throws RedisConnectionException if connection fails
+     * @param  RedisConnectionConfig    $config
+     * @throws RedisConnectionException
      * @return RedisClientInterface
      */
     public static function connect(RedisConnectionConfig $config): RedisClientInterface
+    {
+        if (extension_loaded('redis')) {
+            return self::connectPhpRedis($config);
+        }
+
+        return self::connectResp($config);
+    }
+
+    /**
+     * Connect using ext-redis (PHP runtime / shared hosting).
+     *
+     * @param  RedisConnectionConfig    $config
+     * @throws RedisConnectionException
+     * @return RedisClientInterface
+     */
+    public static function connectPhpRedis(RedisConnectionConfig $config): RedisClientInterface
     {
         $exception = null;
         $redis     = null;
@@ -75,7 +95,7 @@ final class RedisConnector
             }
 
             $redis = new PhpRedisClient($redisExt);
-        } catch (RedisConnectionException $e) {
+        } catch (\LPhenom\Redis\Exception\RedisCommandException $e) {
             $exception = $e;
         } catch (\RedisException $e) {
             $exception = new RedisConnectionException(
@@ -94,5 +114,61 @@ final class RedisConnector
         }
 
         return $redis;
+    }
+
+    /**
+     * Connect using raw TCP + RESP protocol.
+     *
+     * KPHP-compatible: fsockopen() is supported in KPHP compiled binary.
+     * Use this driver in KPHP mode or when ext-redis is not available.
+     *
+     * @param  RedisConnectionConfig    $config
+     * @throws RedisConnectionException
+     * @return RespRedisClient
+     */
+    public static function connectResp(RedisConnectionConfig $config): RespRedisClient
+    {
+        $exception = null;
+        $client    = null;
+
+        try {
+            $resp = new RespClient(
+                $config->getHost(),
+                $config->getPort(),
+                $config->getTimeout()
+            );
+
+            $resp->connect();
+
+            $password = $config->getPassword();
+            if ($password !== '') {
+                $resp->auth($password);
+            }
+
+            $database = $config->getDatabase();
+            if ($database !== 0) {
+                $resp->select($database);
+            }
+
+            $client = new RespRedisClient($resp);
+        } catch (RedisConnectionException $e) {
+            $exception = $e;
+        } catch (RedisCommandException $e) {
+            $exception = new RedisConnectionException(
+                'Redis setup failed: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+
+        if ($exception !== null) {
+            throw $exception;
+        }
+
+        if ($client === null) {
+            throw new RedisConnectionException('Failed to create RESP Redis client: unexpected null');
+        }
+
+        return $client;
     }
 }
