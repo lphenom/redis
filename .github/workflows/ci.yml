@@ -19,6 +19,7 @@ jobs:
         with:
           php-version: "8.1"
           tools: composer:2.9.5
+          coverage: none
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -39,6 +40,7 @@ jobs:
           php-version: "8.1"
           tools: composer:2.9.5
           extensions: redis
+          coverage: none
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -93,9 +95,8 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit --colors=always
+        run: vendor/bin/phpunit --colors=always --no-coverage
         env:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
-
 
