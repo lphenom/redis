@@ -21,7 +21,6 @@ namespace LPhenom\Redis\PubSub;
  *
  * @lphenom-build shared,kphp
  */
- */
 interface MessageHandlerInterface
 {
     /**
