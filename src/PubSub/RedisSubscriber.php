@@ -22,6 +22,8 @@ use LPhenom\Redis\Exception\RedisCommandException;
  * Usage:
  *   $subscriber = new RedisSubscriber($redisConnection);
  *   $subscriber->subscribe('channel', new MyMessageHandler());
+ *
+ * @lphenom-build shared
  */
 final class RedisSubscriber
 {

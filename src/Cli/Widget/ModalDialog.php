@@ -9,6 +9,8 @@ use LPhenom\Redis\Cli\Terminal\Renderer;
 
 /**
  * Modal dialog for confirmations and simple text input.
+  *
+ * @lphenom-build none
  */
 final class ModalDialog
 {

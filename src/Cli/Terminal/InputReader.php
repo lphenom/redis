@@ -9,6 +9,8 @@ namespace LPhenom\Redis\Cli\Terminal;
  *
  * Reads raw bytes from STDIN and translates escape sequences
  * into KeyPress objects.
+  *
+ * @lphenom-build none
  */
 final class InputReader
 {

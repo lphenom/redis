@@ -13,6 +13,8 @@ namespace LPhenom\Redis\Connection;
  * - No constructor property promotion (explicit declarations)
  * - No readonly properties
  * - No reflection
+ *
+ * @lphenom-build shared,kphp
  */
 final class RedisConnectionConfig
 {

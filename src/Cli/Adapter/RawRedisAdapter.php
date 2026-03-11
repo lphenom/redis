@@ -13,6 +13,8 @@ use LPhenom\Redis\Exception\RedisCommandException;
  * SCAN, TYPE, TTL, HGETALL, SMEMBERS, ZRANGE, LRANGE, etc.
  *
  * Requires ext-redis.
+  *
+ * @lphenom-build none
  */
 final class RawRedisAdapter
 {

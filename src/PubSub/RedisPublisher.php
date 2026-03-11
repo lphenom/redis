@@ -17,6 +17,8 @@ use LPhenom\Redis\Client\RedisClientInterface;
  * Usage:
  *   $publisher = new RedisPublisher($redisClient);
  *   $publisher->publish('events', json_encode(['type' => 'user.created']));
+ *
+ * @lphenom-build shared,kphp
  */
 final class RedisPublisher
 {

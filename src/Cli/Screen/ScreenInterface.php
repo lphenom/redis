@@ -12,6 +12,8 @@ use LPhenom\Redis\Cli\Terminal\Renderer;
  *
  * Each screen handles rendering and keyboard input.
  * Returning a screen name from handleInput() triggers navigation.
+  *
+ * @lphenom-build none
  */
 interface ScreenInterface
 {

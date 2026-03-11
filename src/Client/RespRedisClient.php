@@ -29,6 +29,8 @@ use LPhenom\Redis\Resp\RespPipelineDriver;
  *
  * @see RedisClientInterface
  * @see RespClient
+ *
+ * @lphenom-build shared,kphp
  */
 final class RespRedisClient implements RedisClientInterface
 {

@@ -10,6 +10,8 @@ namespace LPhenom\Redis\Cli\Terminal;
  * Collects output in a buffer and flushes at once to minimize
  * terminal flickering. Provides high-level drawing primitives
  * using ANSI escape codes and Unicode box-drawing characters.
+  *
+ * @lphenom-build none
  */
 final class Renderer
 {

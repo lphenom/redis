@@ -24,6 +24,8 @@ use LPhenom\Redis\Resp\RespClient;
  * - No reflection
  * - Explicit new PhpRedisClient() / new RespRedisClient()
  * - try/catch with explicit catch blocks
+ *
+ * @lphenom-build shared
  */
 final class RedisConnector
 {

@@ -23,6 +23,8 @@ use LPhenom\Redis\PubSub\MessageHandlerInterface;
  *   p — publish message
  *   c — clear log
  *   Esc/Backspace — back
+  *
+ * @lphenom-build none
  */
 final class PubSubScreen implements ScreenInterface, MessageHandlerInterface
 {

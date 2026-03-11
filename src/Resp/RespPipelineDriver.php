@@ -13,6 +13,8 @@ use LPhenom\Redis\Pipeline\RedisPipelineDriverInterface;
  * using Redis MULTI/EXEC when execute() is called.
  *
  * KPHP-compatible: no ext-redis, no callable types, explicit properties.
+ *
+ * @lphenom-build shared,kphp
  */
 final class RespPipelineDriver implements RedisPipelineDriverInterface
 {

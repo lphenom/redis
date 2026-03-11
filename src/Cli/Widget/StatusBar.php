@@ -8,6 +8,8 @@ use LPhenom\Redis\Cli\Terminal\Renderer;
 
 /**
  * Status bar widget — bottom line with mode, hints, messages.
+  *
+ * @lphenom-build none
  */
 final class StatusBar
 {

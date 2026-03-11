@@ -9,6 +9,8 @@ namespace LPhenom\Redis\Cli\Terminal;
  *
  * Uses ANSI escape codes and stty for terminal manipulation.
  * No ext-ncurses dependency.
+  *
+ * @lphenom-build none
  */
 final class Terminal
 {

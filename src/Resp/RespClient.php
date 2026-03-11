@@ -30,6 +30,8 @@ use LPhenom\Redis\Exception\RedisConnectionException;
  * - Uses stream_socket_client(), fread(), fwrite(), fgets(), fclose() — all KPHP-supported
  * - try/catch with explicit catch blocks
  * - Explicit null checks, not isset+throw pattern
+ *
+ * @lphenom-build shared,kphp
  */
 final class RespClient
 {

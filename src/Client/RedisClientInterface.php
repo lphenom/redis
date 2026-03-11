@@ -15,6 +15,8 @@ use LPhenom\Redis\Pipeline\RedisPipeline;
  * - All types are explicit
  *
  * Used by: cache, queue, realtime, auth packages.
+ *
+ * @lphenom-build shared,kphp
  */
 interface RedisClientInterface
 {

@@ -24,6 +24,8 @@ use LPhenom\Redis\Client\RedisClientInterface;
  * - ZSET:   table member/score, e to edit score
  *
  * Keys: Esc/Backspace → back to key list
+  *
+ * @lphenom-build none
  */
 final class ValueViewScreen implements ScreenInterface
 {

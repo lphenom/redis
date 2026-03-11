@@ -13,6 +13,8 @@ use LPhenom\Redis\Cli\Terminal\Renderer;
  *
  * Manages screen registry and routes keyboard input
  * to the currently active screen.
+  *
+ * @lphenom-build none
  */
 final class ScreenRouter
 {

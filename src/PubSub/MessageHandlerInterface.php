@@ -18,6 +18,9 @@ namespace LPhenom\Redis\PubSub;
  *   }
  *
  *   $subscriber->subscribe('events', new MyHandler());
+ *
+ * @lphenom-build shared,kphp
+ */
  */
 interface MessageHandlerInterface
 {

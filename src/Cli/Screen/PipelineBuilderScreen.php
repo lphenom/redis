@@ -21,6 +21,8 @@ use LPhenom\Redis\Pipeline\RedisPipeline;
  * Commands are queued and executed together.
  *
  * Keys: a Add command, d Delete, x Execute, Esc Back
+  *
+ * @lphenom-build none
  */
 final class PipelineBuilderScreen implements ScreenInterface
 {

@@ -8,6 +8,8 @@ use LPhenom\Redis\Cli\Terminal\Renderer;
 
 /**
  * Single-line text input widget with cursor and editing support.
+  *
+ * @lphenom-build none
  */
 final class InputWidget
 {

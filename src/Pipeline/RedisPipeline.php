@@ -21,6 +21,8 @@ namespace LPhenom\Redis\Pipeline;
  *   $pipeline->set('a', '1');
  *   $pipeline->incr('counter');
  *   $pipeline->execute();
+ *
+ * @lphenom-build shared,kphp
  */
 final class RedisPipeline
 {

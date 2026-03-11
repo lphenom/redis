@@ -11,6 +11,8 @@ namespace LPhenom\Redis\Pipeline;
  * Implement this interface to connect RedisPipeline to the actual Redis extension.
  *
  * @see PhpRedisPipelineDriver for the ext-redis implementation
+ *
+ * @lphenom-build shared,kphp
  */
 interface RedisPipelineDriverInterface
 {

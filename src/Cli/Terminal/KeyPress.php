@@ -6,6 +6,8 @@ namespace LPhenom\Redis\Cli\Terminal;
 
 /**
  * Represents a single key press event from the terminal.
+  *
+ * @lphenom-build none
  */
 final class KeyPress
 {

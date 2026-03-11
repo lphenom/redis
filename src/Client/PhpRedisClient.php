@@ -20,6 +20,8 @@ use LPhenom\Redis\Pipeline\RedisPipeline;
  * - try/catch with at least one catch block
  *
  * @see RedisClientInterface
+ *
+ * @lphenom-build shared
  */
 final class PhpRedisClient implements RedisClientInterface
 {

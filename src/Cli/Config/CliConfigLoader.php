@@ -14,6 +14,8 @@ use LPhenom\Redis\Connection\RedisConnectionConfig;
  *   2. Environment variables (REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB)
  *   3. Config file (--config path/to/redis.php returning array)
  *   4. Defaults (127.0.0.1:6379)
+  *
+ * @lphenom-build none
  */
 final class CliConfigLoader
 {

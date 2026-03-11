@@ -9,6 +9,8 @@ namespace LPhenom\Redis\Pipeline;
  *
  * NOT included in KPHP entrypoint — requires ext-redis.
  * Used only in PHP runtime mode via PhpRedisClient::pipeline().
+ *
+ * @lphenom-build shared
  */
 final class PhpRedisPipelineDriver implements RedisPipelineDriverInterface
 {

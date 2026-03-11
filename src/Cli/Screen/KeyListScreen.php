@@ -18,6 +18,8 @@ use LPhenom\Redis\Client\RedisClientInterface;
  *
  * Columns: Key | Type | TTL | Size
  * Keys: ↑↓ Navigate, / Filter, Enter View value, d Delete, r Refresh, p Pipeline, s PubSub
+  *
+ * @lphenom-build none
  */
 final class KeyListScreen implements ScreenInterface
 {

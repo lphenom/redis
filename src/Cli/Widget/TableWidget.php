@@ -11,6 +11,8 @@ use LPhenom\Redis\Cli\Terminal\Renderer;
  *
  * Renders a table with headers and rows, supports cursor selection
  * and scrolling.
+  *
+ * @lphenom-build none
  */
 final class TableWidget
 {
