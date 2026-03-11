@@ -56,6 +56,34 @@ if (!$autoloaded) {
     exit(1);
 }
 
+// src/Cli/ is intentionally excluded from production autoload (KPHP compatibility).
+// The bin script loads these files explicitly so it works whether installed as a
+// dev-dependency (autoload-dev registered) or as a production dependency (classmap excluded).
+$cliBase = dirname(__DIR__) . '/src/Cli';
+if (!class_exists(\LPhenom\Redis\Cli\Terminal\Terminal::class, false)) {
+    // Terminal layer
+    require_once $cliBase . '/Terminal/KeyPress.php';
+    require_once $cliBase . '/Terminal/Terminal.php';
+    require_once $cliBase . '/Terminal/InputReader.php';
+    require_once $cliBase . '/Terminal/Renderer.php';
+    // Config
+    require_once $cliBase . '/Config/CliConfigLoader.php';
+    // Adapter
+    require_once $cliBase . '/Adapter/RawRedisAdapter.php';
+    // Widgets
+    require_once $cliBase . '/Widget/InputWidget.php';
+    require_once $cliBase . '/Widget/TableWidget.php';
+    require_once $cliBase . '/Widget/StatusBar.php';
+    require_once $cliBase . '/Widget/ModalDialog.php';
+    // Screens
+    require_once $cliBase . '/Screen/ScreenInterface.php';
+    require_once $cliBase . '/Screen/ScreenRouter.php';
+    require_once $cliBase . '/Screen/KeyListScreen.php';
+    require_once $cliBase . '/Screen/ValueViewScreen.php';
+    require_once $cliBase . '/Screen/PipelineBuilderScreen.php';
+    require_once $cliBase . '/Screen/PubSubScreen.php';
+}
+
 if (!extension_loaded('redis')) {
     fwrite(STDERR, "Error: ext-redis is required for redis-tui\n");
     fwrite(STDERR, "Install: pecl install redis\n");

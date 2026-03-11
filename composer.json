@@ -27,12 +27,18 @@
     ],
     "autoload": {
         "psr-4": {
-            "LPhenom\\Redis\\": "src/"
+            "LPhenom\\Redis\\Client\\":    "src/Client/",
+            "LPhenom\\Redis\\Connection\\": "src/Connection/",
+            "LPhenom\\Redis\\Exception\\": "src/Exception/",
+            "LPhenom\\Redis\\Pipeline\\":  "src/Pipeline/",
+            "LPhenom\\Redis\\PubSub\\":    "src/PubSub/",
+            "LPhenom\\Redis\\Resp\\":      "src/Resp/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "LPhenom\\Redis\\Tests\\": "tests/"
+            "LPhenom\\Redis\\Tests\\": "tests/",
+            "LPhenom\\Redis\\Cli\\":   "src/Cli/"
         }
     },
     "scripts": {

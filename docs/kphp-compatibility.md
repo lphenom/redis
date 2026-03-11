@@ -117,6 +117,112 @@ require_once __DIR__ . '/../src/Exception/RedisConnectionException.php';
 
 Порядок: исключения → интерфейсы → реализации.
 
+---
+
+## src/Cli/ — намеренно исключён из production autoload
+
+`src/Cli/` содержит интерактивный TUI-инструмент (`redis-tui`).
+Этот код **несовместим с KPHP** и **несовместим с продакшн-окружением**:
+
+| Файл | Причина несовместимости |
+|------|------------------------|
+| `Terminal/Terminal.php` | `shell_exec()`, `system()` — недоступны в KPHP |
+| `Terminal/InputReader.php` | `STDIN`, `stream_select()` с файловым дескриптором — CLI-only |
+| `Adapter/RawRedisAdapter.php` | `\Redis` класс — ext-redis, нет в KPHP binary |
+| `Screen/PipelineBuilderScreen.php` | `\Redis::multi()`, `\Redis::PIPELINE` |
+| `Screen/PubSubScreen.php` | `\Redis::subscribe()`, `\Redis::psubscribe()` |
+
+### Как это решено
+
+В `composer.json` `src/Cli/` **полностью исключён** из production autoload:
+
+```json
+{
+  "autoload": {
+    "psr-4": {
+      "LPhenom\\Redis\\Client\\":     "src/Client/",
+      "LPhenom\\Redis\\Connection\\": "src/Connection/",
+      "LPhenom\\Redis\\Exception\\":  "src/Exception/",
+      "LPhenom\\Redis\\Pipeline\\":   "src/Pipeline/",
+      "LPhenom\\Redis\\PubSub\\":     "src/PubSub/",
+      "LPhenom\\Redis\\Resp\\":       "src/Resp/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "LPhenom\\Redis\\Cli\\": "src/Cli/"
+    }
+  }
+}
+```
+
+`src/Cli/` зарегистрирован только в `autoload-dev` — он **не попадает** в
+`vendor/composer/autoload_psr4.php` и `autoload_classmap.php` когда пакет
+устанавливается как зависимость (`composer install --no-dev`).
+
+### Что это означает для монолита на KPHP
+
+Когда вы добавляете `lphenom/redis` в свой проект:
+
+```bash
+composer require lphenom/redis
+```
+
+В `vendor/composer/autoload_psr4.php` появятся только:
+
+```
+LPhenom\Redis\Client\     → vendor/lphenom/redis/src/Client/
+LPhenom\Redis\Connection\ → vendor/lphenom/redis/src/Connection/
+LPhenom\Redis\Exception\  → vendor/lphenom/redis/src/Exception/
+LPhenom\Redis\Pipeline\   → vendor/lphenom/redis/src/Pipeline/
+LPhenom\Redis\PubSub\     → vendor/lphenom/redis/src/PubSub/
+LPhenom\Redis\Resp\       → vendor/lphenom/redis/src/Resp/
+```
+
+`LPhenom\Redis\Cli\` — **не появится**. KPHP никогда не увидит TUI-файлы.
+
+### bin/redis-tui загружает Cli явно
+
+`bin/redis-tui` обходит этот запрет через явные `require_once`:
+
+```php
+// bin/redis-tui
+if (!class_exists(\LPhenom\Redis\Cli\Terminal\Terminal::class, false)) {
+    require_once $cliBase . '/Terminal/KeyPress.php';
+    require_once $cliBase . '/Terminal/Terminal.php';
+    // ... все Cli файлы явно
+}
+```
+
+Это работает в обоих случаях:
+- Локальная разработка (`composer install` с dev): классы уже загружены autoload-dev
+- Установлен в монолит (`--no-dev`): `require_once` загружает файлы напрямую из `vendor/lphenom/redis/src/Cli/`
+
+### KPHP entrypoint монолита — пример
+
+Ваш `build/kphp-entrypoint.php` в монолите должен включать только KPHP-совместимые файлы пакета:
+
+```php
+// ✅ KPHP-совместимые файлы lphenom/redis
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Exception/RedisException.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Exception/RedisConnectionException.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Exception/RedisCommandException.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Pipeline/RedisPipelineDriverInterface.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Pipeline/RedisPipeline.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Client/RedisClientInterface.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Resp/RespClient.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Resp/RespPipelineDriver.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Client/RespRedisClient.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/Connection/RedisConnectionConfig.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/PubSub/MessageHandlerInterface.php';
+require_once __DIR__ . '/../vendor/lphenom/redis/src/PubSub/RedisPublisher.php';
+
+// ❌ НЕ ВКЛЮЧАТЬ — несовместимо с KPHP:
+// require_once __DIR__ . '/../vendor/lphenom/redis/src/Cli/...';
+```
+
+---
+
 ## RespRedisClient — полноценный клиент для KPHP
 
 - [KPHP Documentation](https://vkcom.github.io/kphp/)
