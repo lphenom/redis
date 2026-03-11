@@ -33,7 +33,10 @@
             "LPhenom\\Redis\\Pipeline\\":  "src/Pipeline/",
             "LPhenom\\Redis\\PubSub\\":    "src/PubSub/",
             "LPhenom\\Redis\\Resp\\":      "src/Resp/"
-        }
+        },
+        "exclude-from-classmap": [
+            "src/Cli/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
