@@ -1,0 +1,201 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * redis-tui — Interactive Redis TUI for LPhenom
+ *
+ * Usage:
+ *   redis-tui [options]
+ *
+ * Options:
+ *   --host=<host>       Redis host (default: 127.0.0.1)
+ *   --port=<port>       Redis port (default: 6379)
+ *   --password=<pass>   Redis password
+ *   --db=<n>            Redis database index (default: 0)
+ *   --config=<file>     PHP config file returning array with connection params
+ *
+ * Environment variables:
+ *   REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB
+ *
+ * Key bindings:
+ *   ↑↓        Navigate
+ *   Enter     Open/Select
+ *   /         Filter keys
+ *   d         Delete
+ *   e         Edit value
+ *   a         Add element
+ *   t         Set TTL
+ *   p         Pipeline builder
+ *   s         PubSub monitor
+ *   r         Reload
+ *   q / Esc   Quit
+ *   Ctrl+C    Force quit
+ */
+
+// Locate autoload
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+$autoloaded = false;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        $autoloaded = true;
+        break;
+    }
+}
+
+if (!$autoloaded) {
+    fwrite(STDERR, "Error: Could not find Composer autoload.php\n");
+    fwrite(STDERR, "Run: composer install\n");
+    exit(1);
+}
+
+if (!extension_loaded('redis')) {
+    fwrite(STDERR, "Error: ext-redis is required for redis-tui\n");
+    fwrite(STDERR, "Install: pecl install redis\n");
+    exit(1);
+}
+
+use LPhenom\Redis\Cli\Adapter\RawRedisAdapter;
+use LPhenom\Redis\Cli\Config\CliConfigLoader;
+use LPhenom\Redis\Cli\Screen\KeyListScreen;
+use LPhenom\Redis\Cli\Screen\PipelineBuilderScreen;
+use LPhenom\Redis\Cli\Screen\PubSubScreen;
+use LPhenom\Redis\Cli\Screen\ScreenRouter;
+use LPhenom\Redis\Cli\Screen\ValueViewScreen;
+use LPhenom\Redis\Cli\Terminal\InputReader;
+use LPhenom\Redis\Cli\Terminal\Renderer;
+use LPhenom\Redis\Cli\Terminal\Terminal;
+use LPhenom\Redis\Connection\RedisConnector;
+use LPhenom\Redis\Exception\RedisConnectionException;
+
+// ── Load config ──────────────────────────────────────────────────────────────
+$configLoader = new CliConfigLoader();
+$config       = $configLoader->load($argv);
+
+// ── Connect to Redis ──────────────────────────────────────────────────────────
+$client    = null;
+$connError = null;
+
+try {
+    $client = RedisConnector::connectPhpRedis($config);
+} catch (RedisConnectionException $e) {
+    $connError = $e;
+}
+
+if ($connError !== null || $client === null) {
+    $msg = $connError !== null ? $connError->getMessage() : 'Connection failed';
+    fwrite(STDERR, "Redis connection failed: " . $msg . "\n");
+    fwrite(STDERR, sprintf(
+        "Tried: %s:%d (db %d)\n",
+        $config->getHost(),
+        $config->getPort(),
+        $config->getDatabase()
+    ));
+    exit(1);
+}
+
+// Get underlying \Redis instance for raw adapter and pipeline
+$rawRedis    = null;
+$rawRedisErr = null;
+try {
+    $redisExt = new \Redis();
+    $redisExt->connect($config->getHost(), $config->getPort(), $config->getTimeout());
+    if ($config->getPassword() !== '') {
+        $redisExt->auth($config->getPassword());
+    }
+    $redisExt->select($config->getDatabase());
+    $rawRedis = $redisExt;
+} catch (\Throwable $e) {
+    $rawRedisErr = $e;
+}
+
+if ($rawRedisErr !== null || $rawRedis === null) {
+    $msg = $rawRedisErr !== null ? $rawRedisErr->getMessage() : 'Failed to create raw Redis connection';
+    fwrite(STDERR, "Redis raw connection failed: " . $msg . "\n");
+    exit(1);
+}
+
+// Dedicated connection for PubSub (subscribe blocks the connection)
+$subRedis    = null;
+$subRedisErr = null;
+try {
+    $subRedisExt = new \Redis();
+    $subRedisExt->connect($config->getHost(), $config->getPort(), $config->getTimeout());
+    if ($config->getPassword() !== '') {
+        $subRedisExt->auth($config->getPassword());
+    }
+    $subRedisExt->select($config->getDatabase());
+    $subRedis = $subRedisExt;
+} catch (\Throwable $e) {
+    $subRedisErr = $e;
+}
+
+if ($subRedisErr !== null || $subRedis === null) {
+    $msg = $subRedisErr !== null ? $subRedisErr->getMessage() : 'Failed';
+    fwrite(STDERR, "Warning: PubSub connection not available: " . $msg . "\n");
+    $subRedis = $rawRedis; // fallback — pub will work, sub won't
+}
+
+// ── Bootstrap TUI ──────────────────────────────────────────────────────────────
+$terminal  = new Terminal();
+$adapter   = new RawRedisAdapter($rawRedis);
+
+// Graceful shutdown: restore terminal on any exit
+register_shutdown_function(function () use ($terminal): void {
+    $terminal->showCursor();
+    if ($terminal->isRaw()) {
+        $terminal->disableRaw();
+    }
+    echo "\033[0m\n";
+});
+
+// Handle SIGINT (Ctrl+C)
+if (function_exists('pcntl_signal')) {
+    pcntl_signal(SIGINT, function () use ($terminal): void {
+        $terminal->showCursor();
+        if ($terminal->isRaw()) {
+            $terminal->disableRaw();
+        }
+        echo "\033[0m\n";
+        exit(0);
+    });
+}
+
+$terminal->enableRaw();
+$terminal->hideCursor();
+
+$w        = $terminal->getWidth();
+$h        = $terminal->getHeight();
+$renderer = new Renderer($w, $h);
+$input    = new InputReader();
+
+// ── Build screens ──────────────────────────────────────────────────────────────
+$keyList         = new KeyListScreen($adapter, $client);
+$valueView       = new ValueViewScreen($adapter, $client, $keyList);
+$pipelineBuilder = new PipelineBuilderScreen($client, $rawRedis);
+$pubSub          = new PubSubScreen($subRedis, $client);
+
+$router = new ScreenRouter($renderer, $input);
+$router->register('keys',     $keyList);
+$router->register('value',    $valueView);
+$router->register('pipeline', $pipelineBuilder);
+$router->register('pubsub',   $pubSub);
+
+// ── Run ───────────────────────────────────────────────────────────────────────
+$router->run('keys');
+
+// Cleanup
+$terminal->showCursor();
+$terminal->disableRaw();
+echo "\033[0m\n";
+echo "Goodbye!\n";
+
+
+
