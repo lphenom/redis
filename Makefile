@@ -55,5 +55,6 @@ help:
 	@echo "  make check        — Run lint + analyse + tests"
 	@echo "  make kphp-check   — Build KPHP binary + PHAR"
 	@echo "  make shell        — Open shell in PHP container"
+	@echo "  make tui          — Launch interactive Redis TUI"
 
 
