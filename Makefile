@@ -1,4 +1,4 @@
-.PHONY: up down test lint lint-fix analyse check kphp-check install shell
+.PHONY: up down test lint lint-fix analyse check kphp-check install shell tui
 
 # Docker compose command
 DC = docker compose
@@ -42,6 +42,10 @@ kphp-check:
 shell:
 	$(DC) run --rm php sh
 
+## Launch interactive Redis TUI (requires running Redis service)
+tui:
+	$(DC) run --rm -it php vendor/bin/redis-tui
+
 ## Show help
 help:
 	@echo "Available commands:"
@@ -56,5 +60,3 @@ help:
 	@echo "  make kphp-check   — Build KPHP binary + PHAR"
 	@echo "  make shell        — Open shell in PHP container"
 	@echo "  make tui          — Launch interactive Redis TUI"
-
-
