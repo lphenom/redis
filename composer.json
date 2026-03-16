@@ -1,6 +1,7 @@
 {
     "name": "lphenom/redis",
     "description": "Redis client for LPhenom framework",
+    "version": "0.1.0",
     "type": "library",
     "license": "MIT",
     "keywords": ["redis", "lphenom", "kphp", "client"],

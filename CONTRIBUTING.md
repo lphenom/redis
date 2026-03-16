@@ -1,83 +1,73 @@
-# Contributing to lphenom/redis
+# Участие в разработке lphenom/redis
 
-Thank you for considering contributing to `lphenom/redis`!
+Спасибо за интерес к проекту! 🎉
 
-## Getting started
+## Требования
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/redis`
-3. Start the development environment: `make up`
-4. Install dependencies: `make install`
+- PHP >= 8.1
+- Docker + Docker Compose (для запуска тестов с сервисами)
+- Composer
 
-## Development workflow
+## Настройка окружения
 
 ```bash
-# Run tests
+git clone git@github.com:lphenom/redis.git
+cd redis
+composer install
+
+# Запуск тестов
 make test
-
-# Run linter (dry-run)
-make lint
-
-# Auto-fix code style
-make lint-fix
-
-# Run static analysis
-make analyse
-
-# Run all checks
-make check
 ```
 
-## Code style
+## Стиль кода
 
-- PHP 8.1+ syntax
-- `declare(strict_types=1);` in every file
-- PSR-12 code style (enforced by PHP CS Fixer)
-- PHPDoc on all public methods
-
-## KPHP compatibility
-
-All code must be **KPHP-compatible**. See [docs/kphp-compatibility.md](docs/kphp-compatibility.md).
-
-**Forbidden:**
-- `Reflection` API
-- `eval()`
-- `new $className()` (dynamic class instantiation)
-- `$$varName` (variable variables)
-- `callable` in typed arrays — use interfaces instead
-- Constructor property promotion
-- `readonly` properties
-- `str_starts_with()`, `str_ends_with()`, `str_contains()` — use `substr()`/`strpos()`
-
-Verify KPHP compatibility before submitting:
+PSR-12. Автоисправление:
 
 ```bash
-make kphp-check
+make lint-fix
 ```
 
-## Commit style
+Проверка:
 
-Small, focused commits following the convention:
-
-```
-type(scope): description
+```bash
+make lint
 ```
 
-Types: `feat`, `fix`, `test`, `docs`, `chore`, `refactor`
+## Статический анализ
 
-Examples:
-- `feat(client): add hset/hget support`
-- `fix(pipeline): handle Redis::PIPELINE false return`
-- `test(client): add integration test for blpop`
-- `docs(pubsub): add psubscribe usage example`
+```bash
+make analyse   # PHPStan level 8
+```
 
-## Pull requests
+## Совместимость с KPHP
 
-- All CI checks must pass
-- Tests must cover new functionality
-- Update docs if API changes
+Весь код **обязан** оставаться KPHP-совместимым. Правила:
 
-## License
+- Нет constructor property promotion (`__construct(private $x)`)
+- Нет `readonly` свойств
+- Нет `Reflection`, `eval()`, `$$var`, `new $className()`
+- Нет `str_starts_with`, `str_ends_with`, `str_contains` — используйте `substr`/`strpos`
+- `try/catch` всегда с явным `catch`
+- Нет `callable` в типизированных массивах
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+## Сообщения коммитов
 
+Следуйте [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat(redis): добавить поддержку TTL
+fix(redis): исправить обработку пустого ключа
+test(redis): добавить интеграционный тест
+```
+
+## Чеклист Pull Request
+
+- [ ] Тесты проходят: `make test`
+- [ ] Нет ошибок линтера: `make lint`
+- [ ] PHPStan проходит: `make analyse`
+- [ ] KPHP-совместимо (нет запрещённых конструкций)
+- [ ] Документация обновлена при изменении публичного API
+
+## Лицензия
+
+Участвуя в проекте, вы соглашаетесь, что ваши изменения будут лицензированы под [MIT License](LICENSE).
