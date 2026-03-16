@@ -21,7 +21,7 @@
 ## Установка
 
 ```bash
-composer require lphenom/redis
+composer require lphenom/redis:^0.1
 ```
 
 Для работы через `ext-redis` установите расширение:

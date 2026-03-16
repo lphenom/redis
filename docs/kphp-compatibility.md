@@ -165,7 +165,7 @@ require_once __DIR__ . '/../src/Exception/RedisConnectionException.php';
 Когда вы добавляете `lphenom/redis` в свой проект:
 
 ```bash
-composer require lphenom/redis
+composer require lphenom/redis:^0.1
 ```
 
 В `vendor/composer/autoload_psr4.php` появятся только:
